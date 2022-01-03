@@ -63,23 +63,32 @@ void lectureHead(FILE *f,Header *h){
            if(c == '\0') {
                 c = '#';
             }
-            if(compteur == 4) {
-                if(c == '#') {
-                    h-> Class = malloc(sizeof(char )*strlen("INVALID ELF"));
-                    strcpy(h->Class,"INVALID ELF");
 
-                }
-                else if ( c == 01) {
-                    h-> Class = malloc(sizeof(char )*strlen("ELF32"));
-                    strcpy(h->Class,"ELF32");
+            switch (compteur) {
+            	case 4:
+            		if(c == '#') {
+	                    h-> Class = malloc(sizeof(char )*strlen("INVALID ELF"));
+	                    strcpy(h->Class,"INVALID ELF");
 
-                }
-                else if (c == 02 ) {
-                    h-> Class = malloc(sizeof(char )*strlen("ELF64"));
-                    strcpy(h->Class,"ELF64");
-                }
+	                }
+	                else if ( c == 01) {
+	                    h-> Class = malloc(sizeof(char )*strlen("ELF32"));
+	                    strcpy(h->Class,"ELF32");
 
+	                }
+	                else if (c == 02 ) {
+	                    h-> Class = malloc(sizeof(char )*strlen("ELF64"));
+	                    strcpy(h->Class,"ELF64");
+	                }
+            		break;
             }
+            	case 5:
+            		if (c == '#') {
+            			h-> Class = malloc(sizeof(char )*strlen("INVALID ELF"));
+	                    strcpy(h->Class,"INVALID ELF");
+            		}
+            		break;
+
            type[compteur] = c;
            compteur++;
     }
