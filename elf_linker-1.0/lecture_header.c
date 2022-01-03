@@ -63,6 +63,23 @@ void lectureHead(FILE *f,Header *h){
            if(c == '\0') {
                 c = '#';
             }
+            if(compteur == 4) {
+                if(c == '#') {
+                    h-> Class = malloc(sizeof(char )*strlen("INVALID ELF"));
+                    strcpy(h->Class,"INVALID ELF");
+
+                }
+                else if ( c == 01) {
+                    h-> Class = malloc(sizeof(char )*strlen("ELF32"));
+                    strcpy(h->Class,"ELF32");
+
+                }
+                else if (c == 02 ) {
+                    h-> Class = malloc(sizeof(char )*strlen("ELF64"));
+                    strcpy(h->Class,"ELF64");
+                }
+
+            }
            type[compteur] = c;
            compteur++;
     }
@@ -90,7 +107,7 @@ void lectureHead(FILE *f,Header *h){
             h-> Magic = realloc( h-> Magic , sizeof(char )*( strlen(h-> Magic  ) +1 ) );
             h-> Magic[compteur ] = c ;
 
-            printf("DEBUG : compteur = %d , valeur magic : %c , valeur de c : %x  , taille de magic : %ld  ,  \n" , compteur ,h-> Magic[compteur] , c , strlen(h->Magic));
+           // printf("DEBUG : compteur = %d , valeur magic : %c , valeur de c : %x  , taille de magic : %ld  ,  \n" , compteur ,h-> Magic[compteur] , c , strlen(h->Magic));
             compteur++;
 
         }
