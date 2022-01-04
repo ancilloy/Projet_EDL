@@ -8,15 +8,13 @@ struct Header
     char Class;
     char Data;
     char Version;
-    char Pad[7];
-    char OS_ABI;
-    char ABI_V;
+    char Pad[9];
     char Type[2];
     char Machine[2];
     char Version_Machine[4];
     char Entry_point_adress[4];
-    // char *Start_of_program_headers;
-    // char *Start_of_section_headers;
+    char Start_of_program_headers[4];
+    char Start_of_section_headers[4];
     // char *Flags;
     // char *Size_of_this_header;
     // char *Size_of_program_header;
