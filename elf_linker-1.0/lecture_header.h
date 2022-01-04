@@ -8,14 +8,13 @@ struct Header
     char Class;
     char Data;
     char Version;
-    char Pad[9];
-
-    // char *OS_ABI;
-    // char *ABI_V;
-    // char *Type;
-    // char *Machine;
-    // char *Version_Machine;
-    // char *Entry_point_adress;
+    char Pad[7];
+    char OS_ABI;
+    char ABI_V;
+    char Type[2];
+    char Machine[2];
+    char Version_Machine[4];
+    char Entry_point_adress[4];
     // char *Start_of_program_headers;
     // char *Start_of_section_headers;
     // char *Flags;
@@ -30,5 +29,3 @@ struct Header
 
 
 #endif
-
-
