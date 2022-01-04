@@ -31,51 +31,40 @@ void lectureHead(FILE *f,Header *h){
 		c =fgetc(f);
 		h->Version = c;
 
-        c =fgetc(f);
-		h->OS_ABI = c;
-
-        c =fgetc(f);
-		h->ABI_V = c;
-
-		for (compteur = 0;compteur < 7; compteur++) {
+		for (compteur = 0;compteur < 9; compteur++) {
 			c = fgetc(f);
 			h->Pad[compteur] = c;
 		}
 
-        c =fgetc(f);
-		h->Type[0] = c;
-        c =fgetc(f);
-		h->Type[1] = c;
+		for (compteur = 0;compteur < 2; compteur++) {
+	        c =fgetc(f);
+			h->Type[compteur] = c;
+		}
 
-        c =fgetc(f);
-		h->Machine[0] = c;
-        c =fgetc(f);
-		h->Machine[1] = c;
+		for (compteur = 0;compteur < 2; compteur++) {
+	        c =fgetc(f);
+			h->Machine[compteur] = c;
+		}
 
-        c =fgetc(f);
-		h->Version_Machine[0] = c;
-        c =fgetc(f);
-		h->Version_Machine[1] = c;
-        c =fgetc(f);
-		h->Version_Machine[2] = c;
-        c =fgetc(f);
-		h->Version_Machine[3] = c;
-        printf(" debug : %02X \n",c);
-        c =fgetc(f);
-        printf(" debug : %02X \n",c);
-		h->Entry_point_adress[0] = c;
-        c =fgetc(f);
-        printf(" debug : %02X \n",c);
-		h->Entry_point_adress[1] = c;
-        c =fgetc(f);
-        printf(" debug : %02X \n",c);
-		h->Entry_point_adress[2] = c;
-        c =fgetc(f);
-        printf(" debug : %02X \n",c);
-		h->Entry_point_adress[3] = c;
-        
-    
+		for (compteur = 0;compteur < 4; compteur++) {
+	        c =fgetc(f);
+			h->Version_Machine[compteur] = c;
+		}
 
+		for (compteur = 0;compteur < 4; compteur++) {
+	        c =fgetc(f);
+			h->Entry_point_adress[compteur] = c;
+		}
+
+		for (compteur = 0;compteur < 4; compteur++) {
+	        c =fgetc(f);
+			h->Start_of_program_headers[compteur] = c;
+		}
+
+		for (compteur = 0;compteur < 4; compteur++) {
+	        c =fgetc(f);
+			h->Start_of_section_headers[compteur] = c;
+		}
 
 	}
 
@@ -86,189 +75,162 @@ void lectureHead(FILE *f,Header *h){
 }
 
 
-char *traitement_class(char src){
-   switch (src) {
-       case 01 : return "ELF32";
-                break;
-
-       case 02 : return "ELF64";
-                break;
-
-       default : return "TYPE ELF INCONNU";
-
-   }
-}
-
-char *traitement_data(char src){
-   switch (src) {
-       case 01 : return "Complément à deux, petit boutisme";
-                break;
-
-       case 02 : return "Complément à deux, gros boutisme";
-                break;
-
-       default : return "Format de données inconnu";
-
-   }
-}
-
-char *traitement_version(char src){
-   switch (src) {
-       case 01 : return "1 (current)";
-                break;
-
-       default : return "0 (Invalid version)";
-
-   }
-}
-
-char *traitement_OS_ABI(char src){
-   switch (src) {
-       case 00 : return "UNIX - System V";
-
-       case 01 : return "UNIX - System V";
-
-       default : return "Autre Systéme";
-
-   }
-}
-
-char *traitement_ABI_V(char src){
-   char *ptr = malloc(2*sizeof(char));
-   ptr[0] = src;
-   ptr[1] = '\0';
-   /* Ici 2 cas 
-    => soit la valeur est 00 : je retourne directement la chaine de caractére "0" et je fais un free sur mon ptr qui sert a rien
-    => Valeur differente de 00 : je crée une chaine de caractére avec le caractére que je met dans ptr et je le return dans le default
-   */
-    
-   switch (src) {
-       case 00 : free(ptr);
-                 return "0";
-       default : return ptr;
-
-
-   }
-}
-
-char *traitement_Type(char *src){
-
-    switch (src[0]) {
-       case 00 : 
-                switch (src[1])
-                {
-                case 00 :
-                    return "Aucun";
-                case 01 :
-                    return "Repositionable";
-                case 02 :
-                   return "Executable";
-                case 03 :
-                    return "Objet partagé";
-                case 04 :
-                    return "Fichier Core";
-
-                default:
-                    return "Type non reconnu";
-                }
-        default : return "Type non reconnu";
-
-
-   }
-
-}
-
-char *traitement_Machine(char *src){
-    switch (src[0]) {
-       case 00 :  ;   
-
-                int convertion = src[1];
-                switch (convertion)
-                {
-                    
-                case 0 :
-                    return "Aucune";
-                case 2 :
-                    return "SPARC";
-                case 3 :
-                   return "Intel 80386";
-                case 4 :
-                    return "Motorola 68000";
-                case 7 :
-                    return "Intel i860";
-                case 8 :
-                    return "MIPS I";
-                case 19 :
-                    return "Intel i960";
-                case 20 :
-                    return "PowerPC";
-                case 40 :
-                    return "ARM";
-                case 50 :
-                    return "Intel IA64";
-                case 62 :
-                    return "x64";
-                case 243 :
-                    return "RISC-V";
-                default:
-                    return "Machine non reconnue";
-                }
-        default : return "Machine non reconnu";
-
-
-   }
-
-}
-
-char *traitement_Version_Machine(char *src){
-    if(src[0] != 0 || src[1] != 0 || src[2] != 0)
-        return "Version Machine non reconnue";
-   
-    switch (src[3]) {
-       case 00 : return "0x0 (aucune)";
-        
-        case 01 : return "0x1 (current)";
-
-       default : return "Version Machine non reconnue";
-
-
-   }
-}
-
-
-
-char *traitement_Entry_point_adress(char *src){
-    char *res = malloc(sizeof(char)*16);
-    sprintf(res, "%x%x%x%x",(int) src[0],(int) src[1],(int) src[2], (int) src[3]);
-    int test_convertion = atoi(res);
-    sprintf(res, "0x%d",test_convertion);
-    return res;
-
-}
-
 void print_header(Header *h) {
 
-    printf("En-tête ELF:: \n");
+    printf("En-tête ELF: \n");
     printf("    Magic: ");
-        for(int i = 0 ; i < 4 ; i++) {
-        	printf("%02x ",h->Magic[i]);
-        }
+    for(int i = 0 ; i < 4 ; i++) {
+    	printf("%02x ",h->Magic[i]);
+    }
+
+    printf("%02x ", h->Class);
+    printf("%02x ", h->Data);
+    printf("%02x ", h->Version);
+
+    for(int i = 0 ; i < 9 ; i++) {
+        printf("%02x ",h->Pad[i]);
+    }
         
-    printf("\n");
-    printf("    Class: %s \n",traitement_class(h->Class)); //Faire des switch case pour chaque print avec les resultats possibles comme fait dans l'ancien code.
-    printf("    Data: %s \n",traitement_data(h->Data)); //Faire des switch case pour chaque print avec les resultats possibles comme fait dans l'ancien code.
-    printf("    Version: %s \n",traitement_version(h->Version)); //Faire des switch case pour chaque print avec les resultats possibles comme fait dans l'ancien code.
-    printf("    Pad: ");
-        for(int i = 0 ; i < 7 ; i++) {
-            printf("%02x ",h->Pad[i]);
-        }
-    printf("\n");
-    printf("    OS/ABI: %s \n",traitement_OS_ABI(h->OS_ABI));
-    printf("    ABI Version: %s \n",traitement_ABI_V(h->ABI_V));
-    printf("    Type: %s \n",traitement_Type(h->Type));
-    printf("    Machine: %s \n",traitement_Machine(h->Machine));
-    printf("    Version: %s \n",traitement_Version_Machine(h->Version_Machine));
-    printf("    Adresse du point d'entrée: %s \n", traitement_Entry_point_adress(h->Entry_point_adress));
+    printf("\n    Class: ");
+
+    switch (h->Class) { //Faire des switch case pour chaque print avec les resultats possibles comme fait dans l'ancien code.
+    	case 1 : 
+    		printf("ELF32");
+            break;
+
+       case 2 : 
+       		printf("ELF64");
+            break;
+
+       default : 
+       		printf("TYPE ELF INCONNU");
+    }
+
+    printf("\n    Data: ");
+
+    switch (h->Data) { //Faire des switch case pour chaque print avec les resultats possibles comme fait dans l'ancien code.
+    	case 1 : 
+    		printf("Complément à deux, petit boutisme");
+            break;
+
+       case 2 : 
+       		printf("Complément à deux, gros boutisme");
+            break;
+
+       default : 
+       		printf("Format de données inconnu");
+    }
+
+    printf("\n    Version: ");
+
+    switch (h->Version) { //Faire des switch case pour chaque print avec les resultats possibles comme fait dans l'ancien code.
+       case 1 : 
+       		printf("1 (current)");
+            break;
+
+       default : 
+       		printf("0 (Invalid version)");
+
+   	}
+
+   	printf("\n    Type: ");
+
+    switch (h->Type[0]) {
+    	case 0:
+    		switch (h->Type[1]) {
+		        case 0 :
+		            printf("Aucun");
+		            break;
+		        case 1 :
+		            printf("Repositionable");
+		            break;
+		        case 2 :
+		           printf("Executable");
+		           break;
+		        case 3 :
+		            printf("Objet partagé");
+		            break;
+		        case 4 :
+		            printf("Fichier Core");
+			    	break;
+				default:
+		            printf("Processor-specific");
+		    }
+		    break;
+    }
+
+   	printf("\n    Machine: ");
+
+    switch (h->Machine[0]) {
+    	case 0:
+	    	switch (h->Machine[1]) {
+				case 0:
+					printf("No machine");
+					break;
+				case 1:
+					printf("AT&T WE 32100");
+					break;
+				case 2:
+					printf("SPARC");
+					break;
+				case 3:
+					printf("Intel Architecture");
+					break;
+				case 4:
+					printf("Motorola 68000");
+					break;
+				case 5:
+					printf("Motorola 88000");
+					break;
+				case 7:
+					printf("Intel 80860");
+					break;
+				case 8:
+					printf("MIPS RS3000 Big-Endian");
+					break;
+				case 10:
+					printf("MIPS RS4000 Big-Endian");
+					break;
+				case 11 ... 16:
+					printf("Reserved for future use");
+					break;
+				case 40:
+					printf("ARM");
+					break;
+				}
+				break;
+    }
+
+    printf("\n    Version Machine: ");
+
+    switch (h->Version_Machine[3]) {
+       case 0 : 
+       		printf("0x0 (aucune)");
+       		break;
+        
+        case 1 : 
+    		printf("0x1 (current)");
+    		break;
+
+       default : 
+       		printf("Version Machine non reconnue");
+   	}
+
+   	printf("\n    Adresse du point d'entrée: ");
+
+	if (h->Entry_point_adress[3] == 0) {
+		printf("no entry point");
+	}
+	else {
+		printf("0x%02x", h->Entry_point_adress[3]);
+	}
+
+	printf("\n    Size of program headers: %d", h->Start_of_program_headers[3]);
+
+	printf("\n    Size of section headers: %d", (int) h->Start_of_section_headers[2] << 4 | h->Start_of_section_headers[3]);
+
+	printf("\n");
+
     // printf("Start of program headers: %s \n",h->Start_of_program_headers);
     // printf("Start of section headers: %s \n",h->Start_of_section_headers);
     // printf("Flags: %s \n",h->Flags);
