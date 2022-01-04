@@ -14,7 +14,7 @@ int IsElf(char *str) {
 
 void lectureHead(FILE *f,Header *h){
 	int compteur;
-	char c;
+	unsigned char c;
 
 	for (compteur = 0;compteur < 4; compteur++) {
 		c = fgetc(f);
@@ -31,7 +31,13 @@ void lectureHead(FILE *f,Header *h){
 		c =fgetc(f);
 		h->Version = c;
 
-		for (compteur = 0;compteur < 9; compteur++) {
+		c =fgetc(f);
+		h->ABI = c;
+
+		c =fgetc(f);
+		h->ABI_V = c;
+
+		for (compteur = 0;compteur < 7; compteur++) {
 			c = fgetc(f);
 			h->Pad[compteur] = c;
 		}
@@ -63,7 +69,50 @@ void lectureHead(FILE *f,Header *h){
 
 		for (compteur = 0;compteur < 4; compteur++) {
 	        c =fgetc(f);
+            //printf("Coucou c'est du debug tkt : %x \n",c);
 			h->Start_of_section_headers[compteur] = c;
+		}
+
+        for (compteur = 0;compteur < 4; compteur++) {
+	        c =fgetc(f);
+            //printf("Coucou c'est du debug tkt : %02x \n",c);
+			h->Flags[compteur] = c;
+		}
+
+        for (compteur = 0;compteur < 2; compteur++) {
+	        c =fgetc(f);
+            //printf("Coucou c'est du debug tkt : %02x \n",c);
+			h->Size_of_this_header[compteur] = c;
+		}
+
+        for (compteur = 0;compteur < 2; compteur++) {
+	        c =fgetc(f);
+            //printf("Coucou c'est du debug tkt : %02x \n",c);
+			h->Size_of_program_header[compteur] = c;
+		}
+
+        for (compteur = 0;compteur < 2; compteur++) {
+	        c =fgetc(f);
+            //printf("Coucou c'est du debug tkt : %02x \n",c);
+			h->Number_of_headers[compteur] = c;
+		}
+
+        for (compteur = 0;compteur < 2; compteur++) {
+	        c =fgetc(f);
+            //printf("Coucou c'est du debug tkt : %02x \n",c);
+			h->Size_of_section_headers[compteur] = c;
+		}
+
+        for (compteur = 0;compteur < 2; compteur++) {
+	        c =fgetc(f);
+            //printf("Coucou c'est du debug tkt : %02x \n",c);
+			h->Number_of_section_headers[compteur] = c;
+		}
+
+        for (compteur = 0;compteur < 2; compteur++) {
+	        c =fgetc(f);
+            //printf("Coucou c'est du debug tkt : %02x \n",c);
+			h->Section_header_string_table_index[compteur] = c;
 		}
 
 	}
@@ -73,6 +122,32 @@ void lectureHead(FILE *f,Header *h){
 		exit(1);
 	}
 }
+
+
+int hextodec(char *hex,int taille) {
+     long long decimal = 0, base = 1;
+    int i = 0, length;
+    length = taille;
+    for(i = length--; i >= 0; i--)
+    {
+        if(hex[i] >= '0' && hex[i] <= '9')
+        {
+            decimal += (hex[i] - 48) * base;
+            base *= 16;
+        }
+        else if(hex[i] >= 'A' && hex[i] <= 'F')
+        {
+            decimal += (hex[i] - 55) * base;
+            base *= 16;
+        }
+        else if(hex[i] >= 'a' && hex[i] <= 'f')
+        {
+            decimal += (hex[i] - 87) * base;
+            base *= 16;
+        }
+    }
+    return decimal;
+}  
 
 
 void print_header(Header *h) {
@@ -87,7 +162,7 @@ void print_header(Header *h) {
     printf("%02x ", h->Data);
     printf("%02x ", h->Version);
 
-    for(int i = 0 ; i < 9 ; i++) {
+    for(int i = 0 ; i < 7 ; i++) {
         printf("%02x ",h->Pad[i]);
     }
         
@@ -132,6 +207,55 @@ void print_header(Header *h) {
        		printf("0 (Invalid version)");
 
    	}
+
+   	printf("\n    OS/ABI: ");
+
+   	switch (h->ABI) {
+   		case 0:
+   			printf("UNIX System V");
+   			break;
+   		case 1:
+   			printf("HP-UX");
+   			break;
+   		case 2:
+   			printf("NetBSD");
+   			break;
+   		case 3:
+   			printf("Linux");
+   			break;
+   		case 6:
+   			printf("Sun Solaris");
+   			break;
+   		case 7:
+   			printf("IBM AIX");
+   			break;
+   		case 8:
+   			printf("SGI Irix");
+   			break;
+   		case 9:
+   			printf("FreeBSD");
+   			break;
+   		case 10:
+   			printf("Compaq TRU64");
+   			break;
+   		case 11:
+   			printf("Novell Modesto");
+   			break;
+   		case 12:
+   			printf("OpenBSD");
+   			break;
+   		case 64:
+   			printf("ARM EABI");
+   			break;
+   		case 97:
+   			printf("ARM");
+   			break;
+   		case 255:
+   			printf("Standalone");
+   			break;
+   	}
+
+   	printf("\n    Version ABI: 0x%x", h->ABI_V);
 
    	printf("\n    Type: ");
 
@@ -191,11 +315,26 @@ void print_header(Header *h) {
 				case 10:
 					printf("MIPS RS4000 Big-Endian");
 					break;
-				case 11 ... 16:
-					printf("Reserved for future use");
+				case 19:
+					printf("Intel i960");
+					break;
+				case 20:
+					printf("Power PC");
 					break;
 				case 40:
 					printf("ARM");
+					break;
+				case 50:
+					printf("Intel IA64");
+					break;
+				case 62:
+					printf("x64");
+					break;
+				case 243:
+					printf("RISC-V");
+					break;
+				default:
+					printf("Reserved for future use");
 					break;
 				}
 				break;
@@ -217,29 +356,51 @@ void print_header(Header *h) {
    	}
 
    	printf("\n    Adresse du point d'entrée: ");
+    char res[16];
+    int test_convertion;
+    uint32_t result;
 
 	if (h->Entry_point_adress[3] == 0) {
 		printf("no entry point");
 	}
 	else {
-		printf("0x%02x", h->Entry_point_adress[3]);
+        sprintf(res, "%02x%02x%02x%02x",(int) h->Entry_point_adress[0],(int) h->Entry_point_adress[1],(int) h->Entry_point_adress[2], (int) h->Entry_point_adress[3]);
+        test_convertion = atoi(res);
+        sprintf(res, "0x%d",test_convertion);
+        printf("%s", res);
 	}
 
-	printf("\n    Size of program headers: %d", h->Start_of_program_headers[3]);
+    result = (h->Start_of_program_headers[0]<<24) | (h->Start_of_program_headers[1]<<16) | (h->Start_of_program_headers[2]<<8) | h->Start_of_program_headers[3];
+	printf("\n    Size of program headers: %d (octets dans le fichier)", result);
 
-	printf("\n    Size of section headers: %d", (int) h->Start_of_section_headers[2] << 4 | h->Start_of_section_headers[3]);
+    
+    result = (h->Start_of_section_headers[0]<<24) | (h->Start_of_section_headers[1]<<16) | (h->Start_of_section_headers[2]<<8) | h->Start_of_section_headers[3];
+    printf("\n    Size of section headers: %d (octets dans le fichier)", result);
 
-	printf("\n");
 
-    // printf("Start of program headers: %s \n",h->Start_of_program_headers);
-    // printf("Start of section headers: %s \n",h->Start_of_section_headers);
-    // printf("Flags: %s \n",h->Flags);
-    // printf("Size of this header: %s \n",h->Size_of_this_header);
-    // printf("Size of program headers: %s \n",h->Size_of_program_header);
-    // printf("Number of program headers: %s \n",h->Number_of_program_headers);
-    // printf("Size of section headers: %s \n",h->Size_of_section_headers);
-    // printf("Number of section headers: %s \n",h->Number_of_section_headers);
-    // printf("Section header string table index: %s \n",h->Section_header_string_table_index);
+    printf("\n    Flags: ");
+    sprintf(res, "%02x%02x%02x%02x",(int) h->Flags[0],(int) h->Flags[1],(int) h->Flags[2], (int) h->Flags[3]);
+    test_convertion = atoi(res);
+    sprintf(res, "0x%d",test_convertion);
+    printf("%s, Version5 EABI, soft-float ABI", res);
+
+    result = (h->Size_of_this_header[0]<<8) | h->Size_of_this_header[1];
+    printf("\n    Taille de cet en-tete: %d (octets)", result);
+
+    result = (h->Size_of_program_header[0]<<8) | h->Size_of_program_header[1];
+    printf("\n    Taille de l'en-tete du programme: %d (octets)", result);
+
+    result = (h->Number_of_headers[0]<<8) | h->Number_of_headers[1];
+    printf("\n    Nombre d'en-tête du programme: %d", result);
+    
+    result = (h->Size_of_section_headers[0]<<8) | h->Size_of_section_headers[1];
+    printf("\n    Taille des en-têtes de section: %d (octets) ", result);
+    
+    result = (h->Number_of_section_headers[0]<<8) | h->Number_of_section_headers[1];
+    printf("\n    Nombre d'en-têtes de section: %d", result);
+    
+    result = (h->Section_header_string_table_index[0]<<8) | h->Section_header_string_table_index[1];
+    printf("\n    Table d'indexes des chaînes d'en-tête de section: %d \n", result);
     
 }
 
