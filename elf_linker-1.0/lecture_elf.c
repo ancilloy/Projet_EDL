@@ -8,9 +8,9 @@
 
 Elf32_Ehdr header;
 Elf32_Shdr section;
-section_n nom_section;
+section_n *sct;
 
-int IsElf(char *str) {
+int IsElf(unsigned char *str) {
     if(str[0] == 0x7f && str[1] == 'E' && str[2] == 'L' && str[3] == 'F')
     	return 1;
     else
@@ -28,20 +28,32 @@ void lectureHead(FILE *f){
 }
 
 void lectureSection(FILE *f){
-	
-	int decalage = bswap_32(header.e_shoff) + bswap_16(e_shentsize) * bswap_16(e_shnum);
-	printf("\n%d\n", decalage);
 
-  fseek(f, decalage, SEEK_SET);
+	fseek(f, bswap_32(header.e_shoff) + bswap_16(header.e_shentsize) * bswap_16(header.e_shstrndx), SEEK_SET);
 
-	fread(&section, 1, sizeof(Elf32_Shdr), f);
+	fread(&section, 1, sizeof(section), f);
 
-  nom_section = malloc(sizeof(section.sh_size));
+	char* sect_nom = malloc(bswap_32(section.sh_size));
 
-  fseek(f, bswap_32(header.e_shoff), SEEK_SET);
+	fseek(f, bswap_32(section.sh_offset), SEEK_SET);
 
-  fread(&nom_section, 1, sizeof(section.sh_size), f);
+	fread(sect_nom, 1, bswap_32(section.sh_size), f);
 
+	for (int i=0; i<bswap_16(header.e_shnum); i++) {
+
+		sct[i].nom = "";
+		printf("\n%s\n", sct[i].nom);
+
+		fseek(f, bswap_32(header.e_shoff) + i * sizeof(Elf32_Shdr), SEEK_SET);
+		fread(&sct[i].sect, 1, sizeof(section), f);
+
+		if (bswap_32(sct[i].sect.sh_name)) {
+			sct[i].nom = sect_nom + bswap_32(sct[i].sect.sh_name);
+		}
+
+		// printf("\n%d\n", i);
+
+	}
 } 
 
 
@@ -264,13 +276,21 @@ void print_header() {
 
 void print_section() {
 
-	printf("\n\nOUI LE TEST:   %x\n", bswap_32(section.sh_name));
+	printf("Il y a %d en-têtes de section, débutant à l'adresse de décalage 0x%x:\n", bswap_16(header.e_shnum), bswap_32(header.e_shoff));
+
+	printf("\n[NR]	Nom			Type		Adr		Décala	Taille	ES	Fan	LN	Inf	Al\n");
+
+	for (int i=0; i<bswap_16(header.e_shnum); i++) {
+		printf("[%d]	%s		\n", i, sct[i].nom);
+	}
 }
 
 
 int main(int argc , char **argv)
 {
     FILE *f;
+
+	sct = malloc(sizeof(section_n) * bswap_16(header.e_shnum));
 
     f = fopen(argv[1],"r");
     lectureHead(f);
