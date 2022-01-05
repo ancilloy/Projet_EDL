@@ -39,8 +39,28 @@ typedef struct {
 
 
 typedef struct {
-    Elf32_Shdr section;
+    Elf32_Shdr sect;
     char *nom;
 } section_n;
+
+
+typedef struct {
+    uint32_t st_name;
+    uint32_t st_value;
+    uint32_t st_size;
+    unsigned char st_info;
+    unsigned char st_other;
+    uint16_t st_shndx;
+} Elf32_Sym;
+
+typedef struct {
+    uint32_t r_offset;
+    uint32_t r_info;
+} Elf32_Rel;
+typedef struct {
+    uint32_t r_offset;
+    uint32_t r_info;
+    uint32_t r_addend;
+} Elf32_Rela;
 
 #endif
