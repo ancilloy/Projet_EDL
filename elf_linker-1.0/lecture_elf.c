@@ -28,7 +28,6 @@ void lectureHead(FILE *f){
 }
 
 void lectureSection(FILE *f){
-
 	fseek(f, bswap_32(header.e_shoff) + bswap_16(header.e_shentsize) * bswap_16(header.e_shstrndx), SEEK_SET);
 
 	fread(&section, 1, sizeof(section), f);
@@ -42,10 +41,9 @@ void lectureSection(FILE *f){
 	for (int i=0; i<bswap_16(header.e_shnum); i++) {
 
 		sct[i].nom = "";
-		printf("\n%s\n", sct[i].nom);
 
 		fseek(f, bswap_32(header.e_shoff) + i * sizeof(Elf32_Shdr), SEEK_SET);
-		fread(&sct[i].sect, 1, sizeof(section), f);
+		fread(&(sct[i].sect), 1, sizeof(Elf32_Shdr), f);
 
 		if (bswap_32(sct[i].sect.sh_name)) {
 			sct[i].nom = sect_nom + bswap_32(sct[i].sect.sh_name);
@@ -276,12 +274,32 @@ void print_header() {
 
 void print_section() {
 
-	printf("Il y a %d en-têtes de section, débutant à l'adresse de décalage 0x%x:\n", bswap_16(header.e_shnum), bswap_32(header.e_shoff));
+	printf("\nIl y a %d en-têtes de section, débutant à l'adresse de décalage 0x%x:\n", bswap_16(header.e_shnum), bswap_32(header.e_shoff));
 
-	printf("\n[NR]	Nom			Type		Adr		Décala	Taille	ES	Fan	LN	Inf	Al\n");
+	int Lmax = 3; // Longueur du mot "Nom", longueur minimum de la colonne.
+	int L;
+	for (int i=0; i<bswap_16(header.e_shnum); i++) {
+		L = strlen(sct[i].nom);
+		if (L>Lmax)
+			Lmax = L;
+	}
+	Lmax++;
+
+	printf("\n[NR] Nom");
+	for (int j=3; j<Lmax; j++) {
+		printf(" ");
+	}
+	
+	printf("Type		Adr		Décala	Taille	ES	Fan	LN	Inf	Al\n");
 
 	for (int i=0; i<bswap_16(header.e_shnum); i++) {
-		printf("[%d]	%s		\n", i, sct[i].nom);
+		printf("[%02d] ", i);
+		
+		printf("%s", sct[i].nom);
+		for (int j=strlen(sct[i].nom); j<Lmax; j++) {
+			printf(" ");
+		}
+		printf(",\n");
 	}
 }
 
@@ -290,12 +308,12 @@ int main(int argc , char **argv)
 {
     FILE *f;
 
-	sct = malloc(sizeof(section_n) * bswap_16(header.e_shnum));
-
     f = fopen(argv[1],"r");
     lectureHead(f);
     print_header();
     fclose(f);
+
+	sct = malloc(sizeof(section_n) * bswap_16(header.e_shnum));
 
     f = fopen(argv[1],"r");
     lectureSection(f);
