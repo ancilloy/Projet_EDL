@@ -280,23 +280,117 @@ void print_section() {
 
 	printf("\n[NR]	Nom			Type		Adr		Décala	Taille	ES	Fan	LN	Inf	Al\n");
 
-	for (int i=0; i<bswap_16(header.e_shnum); i++) {
-		printf("[%d]	%s		\n", i, sct[i].nom);
-	}
+		for (int i=0; i<bswap_16(header.e_shnum); i++) {
+		printf("[%d]	%s		", i, sct[i].nom);
+		switch(bswap_32(sct[i].sect.sh_type)){
+			case 0:
+			printf("NULL");
+			break;
+			case 1:
+			printf("PROGBITS");
+			break;
+			case 2:
+			printf("SYMTAB");
+			break;
+			case 3:
+			printf("STRTAB");
+			break;
+			case 4:
+			printf("RELA");
+			break;
+			case 5:
+			printf("HASH");
+			break;
+			case 6:
+			printf("DYNAMIC");
+			break;
+			case 7:
+			printf("NOTE");
+			break;
+			case 8:
+			printf("NOBITS");
+			break;
+			case 9:
+			printf("REL");
+			break;
+			case 10:
+			printf("SHLIB");
+			break;
+			case 11:
+			printf("DYNSYM");
+			break;
+			case 0x70000003:
+			printf("ARM_ATTRIBUTES");
+			break;
+			case 0x70000000:
+			printf("LOPROC");
+			break;
+			case 0x7fffffff:
+			printf("HIPROC");
+			break;
+			case 0x80000000:
+			printf("LOUSER");
+			break;
+			case 0xffffffff:
+			printf("HIUSER");
+			break;
+			default:
+			printf("ERROR");
+		}
+		printf("%08x     %06x      %06x     %02x ",bswap_32(sct[i].sect.sh_addr),bswap_32(sct[i].sect.sh_offset),bswap_32(sct[i].sect.sh_size),bswap_32(sct[i].sect.sh_entsize));
+		if(bswap_32(sct[i].sect.sh_flags) & 1<<0){
+			printf("W");
+			}
+		if(bswap_32(sct[i].sect.sh_flags) & 1<<1){
+			printf("A");
+			}
+		if(bswap_32(sct[i].sect.sh_flags) & 1<<2){
+			printf("X");
+		}
+		if(bswap_32(sct[i].sect.sh_flags) & 1<<4){
+			printf("M");
+			}
+		if(bswap_32(sct[i].sect.sh_flags) & 1<<5){
+			printf("S");
+			}
+		if(bswap_32(sct[i].sect.sh_flags) & 1<<6){
+			printf("I");
+			}
+		if(bswap_32(sct[i].sect.sh_flags) & 1<<7){
+			printf("L");
+			}
+		if(bswap_32(sct[i].sect.sh_flags) & 1<<8){
+			printf("o");
+			}
+		if(bswap_32(sct[i].sect.sh_flags) & 1<<9){
+			printf("G");
+			}
+		if(bswap_32(sct[i].sect.sh_flags) & 1<<10){
+			printf("T");
+			}
+		if(bswap_32(sct[i].sect.sh_flags) & 1<<31){
+			printf("E");
+			
+			}
+	printf(" %d ",bswap_32(sct[i].sect.sh_link));
+	printf(" %d ",bswap_32(sct[i].sect.sh_info));
+	printf("%d ",bswap_32(sct[i].sect.sh_addralign));
+
+	printf("\n");}
+}
 }
 
 
 int main(int argc , char **argv)
 {
     FILE *f;
-
-	sct = malloc(sizeof(section_n) * bswap_16(header.e_shnum));
-
     f = fopen(argv[1],"r");
     lectureHead(f);
     print_header();
     fclose(f);
-
+	
+    sct = malloc(sizeof(section_n) * bswap_16(header.e_shnum));
+	
     f = fopen(argv[1],"r");
     lectureSection(f);
     print_section();
